@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Game1</title>
+</head>
+
+<body>
+    <canvas id="canvas" width="800" height="800"></canvas>
+    <script>
+        var log = console.log.bind(console);
+        /*
+
+                以上都是错误示范
+                1 最外层一定不能有变量
+                2 函数为基本单位
+                3 怎样才能把代码写的更好 函数结构 一步一步从基础开始 优化代码
+
+        */
+        //加载img
+        var ImageFromPath = function (path) {
+            var img = new Image()
+            img.src = path
+            return img
+        }
+        //img的属性
+        var Paddle = function () {
+            var image = ImageFromPath('meizi.png')
+            var o = {
+                image: image,
+                x: 100,
+                y: 100,
+                speed: 15,
+            }
+            o.moveLeft = function () {
+                o.x -= o.speed
+                if(o.x<0){
+                    o.x=0
+                }
+            }
+            o.moveRight = function () {
+                o.x += o.speed
+                if(o.x>800 - o.image.width){
+                    o.x=800 - o.image.width
+                }
+            }
+            o.moveTop = function () {
+                o.y -= o.speed
+                if(o.y<0){
+                    o.y=0
+                }
+            }
+            o.moveDown = function () {
+                o.y += o.speed
+                if(o.y>800 - o.image.height){
+                    o.y=800 - o.image.height
+                }
+            }
+            o.collide = function (ball) {
+                if (ball.y + ball.image.height > o.y) {
+                    if (ball.x > o.x && ball.x < o.x + o.image.width) {
+                        console.log('相撞')
+                        return true
+                    }
+                }
+                return false
+            }
+
+            return o
+        }
+
+        //定义入口
+        var __enter = function () {
+            var game = Game()
+            var paddle = Paddle()
+            var ball = Ball()
+            var paused = false
+
+            var blocks = []
+            for (var i = 0; i < 10; i++) {
+                var b = Block()
+                //设置 block坐标
+                b.x = i*50
+                b.y = Math.random()*300
+                blocks.push(b)
+            }
+
+            //game里的register函数对应的key 执行应得事件的注册函数
+            game.register('a', () => {
+                paddle.moveLeft()
+            })
+            game.register('d', () => {
+                paddle.moveRight()
+            })
+            game.register('w', () => {
+                paddle.moveTop()
+            })
+            game.register('f', () => {
+                ball.fire()
+            })
+            game.register('p', () => {
+                paused =! paused
+            })
+
+
+            //让球动的事件
+            game.register('s', () => {
+                paddle.moveDown()
+            })
+
+            //update
+            game.update = function () {
+
+                if(paused){
+                    return
+                }
+
+
+                ball.move()
+                //判断板子碰撞 
+                if (paddle.collide(ball)) {
+                    ball.反弹()
+                }
+                //判断ball 和 砖块 block相撞
+
+                for (let i = 0; i < blocks.length; i++) {
+                    var block = blocks[i];
+                    if (block.collide(ball)) {
+                        log('block 相撞')
+                        block.kill()
+                        ball.反弹()
+                    }
+                }
+
+
+
+
+            }
+            // game.draw() 
+            game.draw = function () {
+                game.context.drawImage(paddle.image, paddle.x, paddle.y)
+                game.context.drawImage(ball.image, ball.x, ball.y)
+
+
+                for (let i = 0; i < blocks.length; i++) {
+                    var block = blocks[i];
+                    //判断砖块是否被打掉
+                if (block.alive) {
+                    game.context.drawImage(block.image, block.x, block.y)
+                }
+                }
+
+
+                
+
+
+            }
+        }
+
+
+        //画个砖
+        var Block = function () {
+            var image = ImageFromPath('zhuan.png')
+            var o = {
+                image: image,
+                x: 100,
+                y: 100,
+                w: 50,
+                h: 20,
+                alive: true,
+            }
+            o.kill = function () {
+                o.alive = false
+            }
+            o.collide = function (b) {
+                // return rectIntersects(o,b) || rectIntersects(b,o)   
+                //改正block碰撞消失后原位置还有碰撞bug
+                return o.alive && (rectIntersects(o, b) || rectIntersects(b, o))
+            }
+            return o
+        }
+
+        //碰撞检测
+        var rectIntersects = function (a, b) {
+            var o = a;
+            if (b.y > o.y && b.y < o.y + o.image.height) {
+                if (b.x > o.x && b.x < o.x + o.image.width) {
+                    console.log('相撞')
+                    return true
+                }
+            }
+            return false
+        }
+
+        var Game = function () {
+            var g = {
+                actions: {},
+                keydowns: {},
+            }
+            var canvas = document.querySelector('#canvas')
+            var context = canvas.getContext('2d')
+            g.canvas = canvas
+            g.context = context
+
+            window.addEventListener('keydown', (e) => {
+                g.keydowns[e.key] = true
+            })
+            window.addEventListener('keyup', (e) => {
+                g.keydowns[e.key] = false
+            })
+
+            //注册函数
+            g.register = function (key, callback) {
+                g.actions[key] = callback;
+            }
+
+            //timer
+            setInterval(() => {
+                var actions = Object.keys(g.actions);
+
+                for (var i = 0; i < actions.length; i++) {
+                    var key = actions[i];
+                    if (g.keydowns[key]) {
+                        //如果按键被按下，调用注册的action
+                        g.actions[key]();
+                    }
+                }
+                context.clearRect(0, 0, canvas.width, canvas.height)
+
+
+
+                g.update()
+
+                g.draw()
+            }, 1000 / 30)
+
+            return g
+        }
+
+        //画个球
+        var Ball = function () {
+            var image = ImageFromPath('ball.png')
+            var o = {
+                image: image,
+                x: 100,
+                y: 200,
+                speedX: 10,
+                speedY: 10,
+                fired: false,
+            }
+            o.move = function () {
+                if (o.fired) {
+                    if (o.x < 0 || o.x > 800) {
+                        o.speedX *= -1
+                    }
+                    if (o.y < 0 || o.y > 800) {
+                        o.speedY *= -1
+                    }
+                    //move
+                    o.x += o.speedX
+                    o.y += o.speedY
+                }
+            }
+            o.fire = function () {
+                o.fired = true;
+            }
+
+            o.反弹 = function () {
+                o.speedY *= -1
+            }
+            return o
+        }
+        __enter()
+    </script>
+</body>
+
+</html>
