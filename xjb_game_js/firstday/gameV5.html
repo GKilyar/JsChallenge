@@ -101,10 +101,13 @@
             game.register('f', () => {
                 ball.fire()
             })
-            game.register('p', () => {
-                paused =! paused
+      
+            //暂停
+            window.addEventListener('keydown',(e)=>{
+                if(e.key == 'p'){
+                    paused =! paused
+                }
             })
-
 
             //让球动的事件
             game.register('s', () => {
