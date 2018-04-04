@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Game1</title>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="800"></canvas>
+    <script>
+        var log = console.log.bind(console);
+/*
+
+        以上都是错误示范
+        1 最外层一定不能有变量
+        2 函数为基本单位
+        3 怎样才能把代码写的更好 函数结构 一步一步从基础开始 优化代码
+
+*/
+
+//定义入口
+var __enter = function(){
+        var paddle = Paddle()
+        
+        
+        var canvas = document.querySelector('#canvas')
+        var context = canvas.getContext('2d')
+        var leftdown = false
+        var rightdown = false
+        var topdown =false
+        var bottomdown = false
+        window.addEventListener('keydown',(e)=>{
+            var k = e.key
+            if(k =='a'){
+                leftdown = true;
+            }else if(k == 'd'){
+                rightdown = true
+            }else if(k=='s'){
+                bottomdown =  true
+            }else if(k=='w'){
+                topdown=true
+            }
+        })
+        window.addEventListener('keyup',(e)=>{
+            var k = e.key
+            if(k =='a'){
+                leftdown = false
+            }else if(k == 'd'){
+                rightdown = false
+            }
+            else if(k == 's'){
+                bottomdown = false
+            }
+            else if(k == 'w'){
+                topdown = false
+            }
+        })
+
+        
+        setInterval(()=>{
+            //update x y
+            if(leftdown){
+                paddle.moveLeft()
+            }else if(rightdown){
+                paddle.moveRight()
+            }else if(topdown){
+                paddle.moveTop()
+            }else if(bottomdown){
+                paddle.moveDown()
+            }
+            context.clearRect(0,0,canvas.width,canvas.height)
+            context.drawImage(paddle.image,paddle.x,paddle.y)
+        },1000/30);
+
+
+}
+
+//加载img
+var ImageFromPath = function(path){
+        var img = new Image()
+        img.src = path
+        return img
+}
+//img的属性
+var Paddle =function(){
+    var image = ImageFromPath('meizi.png')
+    var o = {
+        image:image,
+        x:100,
+        y:100,
+        speed:5,
+    }
+    o.moveLeft = function(){
+        o.x-=o.speed
+    }
+    o.moveRight = function(){
+        o.x+=o.speed
+    }
+    o.moveTop = function(){
+        o.y-=o.speed
+    }
+    o.moveDown = function(){
+        o.y+=o.speed
+    }
+
+    return o
+}
+__enter()
+    </script>
+</body>
+</html>

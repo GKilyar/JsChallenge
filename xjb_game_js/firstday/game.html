@@ -7,21 +7,110 @@
     <title>Game1</title>
 </head>
 <body>
-    <canvas id="canvas" width="400" height="400"></canvas>
+    <canvas id="canvas" width="800" height="800"></canvas>
     <script>
         //打砖块
         var log = console.log.bind(console);
-        const canvas = document.querySelector('#canvas');
-        const ctx = canvas.getContext('2d');
+        var canvas = document.querySelector('#canvas');
+        
+        var context = canvas.getContext('2d');
+        log(context)
 
-        const x = 100;
-        const y = 200;
-
-        const img = new Image();
-        img.scr = '';
+        var x = 100;
+        var y = 200;
+        var speed = 5;
+        var img = new Image();
+        img.src = 'meizi.png';
         img.onload = function(){
-            
+            context.drawImage(img,x,y);
         }
+
+
+        //绘制图像区域
+        // window.addEventListener('keydown',(e)=>{
+        //     var k = e.key
+        //     if(k =='a'){
+        //         x-=10
+        //         context.clearRect(0,0,canvas.width,canvas.height)
+        //         context.drawImage(img,x,y);
+        //     }else if(k == 'd'){
+        //         x+=10;
+        //         context.clearRect(0,0,canvas.width,canvas.height)
+        //         context.drawImage(img,x,y);
+        //     }else if(k=='w'){
+        //         y-=10;
+        //         context.clearRect(0,0,canvas.width,canvas.height)
+        //         context.drawImage(img,x,y);
+        //     }else if(k=='s'){
+        //         y+=10;
+        //         context.clearRect(0,0,canvas.width,canvas.height)
+        //         context.drawImage(img,x,y);
+        //     }
+        // })
+
+        
+        //画面抖动方式更改
+        var leftdown = false
+        var rightdown = false
+        var topdown =false
+        var bottomdown = false
+        window.addEventListener('keydown',(e)=>{
+            var k = e.key
+            if(k =='a'){
+                leftdown = true;
+            }else if(k == 'd'){
+                rightdown = true
+            }else if(k=='s'){
+                bottomdown =  true
+            }else if(k=='w'){
+                topdown=true
+            }
+        })
+        window.addEventListener('keyup',(e)=>{
+            var k = e.key
+            if(k =='a'){
+                leftdown = false
+            }else if(k == 'd'){
+                rightdown = false
+            }
+            else if(k == 's'){
+                bottomdown = false
+            }
+            else if(k == 'w'){
+                topdown = false
+            }
+        })
+
+        
+        setInterval(()=>{
+            //update x y
+            if(leftdown){
+                x-=speed
+            }else if(rightdown){
+                x+=speed
+            }else if(topdown){
+                y-=speed
+            }else if(bottomdown){
+                y+=speed
+            }
+            
+            
+            
+            //draw
+            context.clearRect(0,0,canvas.width,canvas.height)
+            context.drawImage(img,x,y)
+        },1000/30);
+
+
+
+/*
+
+        以上都是错误示范
+        1 最外层一定不能有变量
+        2 函数为基本单位
+        3 怎样才能把代码写的更好 函数结构 一步一步从基础开始 优化代码
+
+*/
     </script>
 </body>
 </html>

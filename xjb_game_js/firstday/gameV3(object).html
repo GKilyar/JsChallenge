@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Game1</title>
+</head>
+
+<body>
+    <canvas id="canvas" width="800" height="800"></canvas>
+    <script>
+        var log = console.log.bind(console);
+        /*
+
+                以上都是错误示范
+                1 最外层一定不能有变量
+                2 函数为基本单位
+                3 怎样才能把代码写的更好 函数结构 一步一步从基础开始 优化代码
+
+        */
+
+        //定义入口
+        var __enter = function () {
+            var game = Game()
+            var paddle = Paddle()
+            var ball = Ball()
+
+           //game里的register函数对应的key 执行应得事件的注册函数
+           game.register('a',()=>{
+               paddle.moveLeft()
+           })
+           game.register('d',()=>{
+               paddle.moveRight()
+           })
+           game.register('w',()=>{
+               paddle.moveTop()
+           })
+           game.register('s',()=>{
+               paddle.moveDown()
+           })
+
+           //update
+           game.update = function(){
+           }
+           // game.draw() 
+           game.draw = function(){
+               game.context.drawImage(paddle.image, paddle.x, paddle.y)
+           } 
+        }
+
+        //加载img
+        var ImageFromPath = function (path) {
+            var img = new Image()
+            img.src = path
+            return img
+        }
+        //img的属性
+        var Paddle = function () {
+            var image = ImageFromPath('meizi.png')
+            var o = {
+                image: image,
+                x: 100,
+                y: 100,
+                speed: 5,
+            }
+            o.moveLeft = function () {
+                o.x -= o.speed
+            }
+            o.moveRight = function () {
+                o.x += o.speed
+            }
+            o.moveTop = function () {
+                o.y -= o.speed
+            }
+            o.moveDown = function () {
+                o.y += o.speed
+            }
+
+            return o
+        }
+
+        var Game = function() {
+            var g = {
+                actions:{},
+                keydowns:{},
+            }
+            var canvas = document.querySelector('#canvas')
+            var context = canvas.getContext('2d')
+            g.canvas = canvas
+            g.context = context
+
+            window.addEventListener('keydown',(e)=>{
+                g.keydowns[e.key] = true
+            })
+            window.addEventListener('keyup',(e)=>{
+                g.keydowns[e.key] = false
+            })
+
+            //注册函数
+            g.register = function(key,callback){
+                console.log('asd')
+                g.actions[key] = callback;
+            }
+            
+            //timer
+            setInterval(() => {
+                var actions = Object.keys(g.actions);
+                
+                for (var i = 0; i < actions.length; i++) {
+                    var key = actions[i];
+                    if(g.keydowns[key]){
+                        //如果按键被按下，调用注册的action
+                        g.actions[key]();
+                    }
+                }
+                context.clearRect(0,0,canvas.width,canvas.height)
+                g.draw()
+            }, 1000 / 30)
+
+            return g
+        }
+
+
+        __enter()
+    </script>
+</body>
+
+</html>
