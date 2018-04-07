@@ -6,6 +6,9 @@
 }
  
 var log = console.log.bind(console);
+
+
+
  
  //碰撞检测
  var rectIntersects = function (a, b) {
