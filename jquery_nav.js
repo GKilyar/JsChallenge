@@ -5,7 +5,7 @@
  */ 
 
 ;(function($,window,doucment,undefined){
-    //constructor
+    //constructor 写好获取的所有属性方便后续直接调用
     var OnePageNav = function (elem, options) {
         //获得元素
         this.elem = elem;
@@ -66,7 +66,7 @@
             return this;
         },
 
-        //调整nav class
+        //调整nav class 给当前点击a 元素的父元素加类名
         adjustNav:function(self,$parent){
             self.$elem.find('.'+self.config.currentClass).removeClass(self.config.currentClass);
             $parent.addClass(self.config.currentClass);
@@ -77,11 +77,12 @@
             var self = this;
             var docHeight;
 
-            //$(window).on()
+            //$(window).on()是否移动
             self.$win.on('scroll.onePageNav',function(){
                 self.didScroll = true;
             })
 
+            //add 定时器属性
             self.t = setInterval(function(){
                 //当前document的高度
                 docHeight = self.$doc.height();
@@ -118,7 +119,8 @@
                 }
             });
         },
-        //
+
+        //找到链接对应部分的高度 返回比当前窗口高度 更高的section
         getSection:function(windowPos){
             var returnValue = null;
             var windowHeight = Math.round(this.$win.height()*this.config.scrollThreshold);
@@ -135,35 +137,37 @@
         //点击事件 回到相应部分
         handleClick : function (e) {
             var self = this;
+            //当前点击元素
             var $link = $(e.currentTarget);
+            //当前元素的父元素
             var $parent = $link.parent();
+            //得到每个a fref=#{name} #后对应的部分
             var newLoc = '#'+self.getHash($link);
 
 
-            //这部分还没写完
-            if (!$parent.hasClass(self.config.currentClass)) {
-                //Start callback
-                if (self.config.begin) {
+            //判断当前元素有没有高亮类名
+            if(!$parent.hasClass(self.config.currentClass)){
+                //判断是否是开始状态
+                if(self.config.begin){
                     self.config.begin();
                 }
 
-                //Change the highlighted nav item
-                self.adjustNav(self, $parent);
+                //改变高亮当前nav项
+                self.adjustNav(self,$parent);
 
-                //Removing the auto-adjust on scroll
+                //移除
                 self.unbindInterval();
 
-                //Scroll to the correct position
-                self.scrollTo(newLoc, function () {
-                    //Do we need to change the hash?
-                    if (self.config.changeHash) {
+                //移动至正确位置
+                self.scrollTo(newLoc,function(){
+                    //判断是否改变hash
+                    if(self.config.changeHash){
                         window.location.hash = newLoc;
                     }
 
                     self.bindInterval();
 
-                    //End callback
-                    if (self.config.end) {
+                    if(self.config.end){
                         self.config.end();
                     }
                 });
@@ -171,16 +175,56 @@
 
             e.preventDefault();
         },
-        //
-        scrollChange:function(){},
-        //
-        scrollTo:function(){},
-        //
-        unbindInterval:function(){}
+
+        /**
+         * 判断是否移动操作 
+         */
+        scrollChange:function(){
+            var windowTop = this.$win.scrollTop();
+            var position = this.getSection(windowTop);
+            var $parent
+
+
+            if(position !==null){
+                $parent = this.$elem.find('a[href$="#'+position+'"]').parent();
+                
+
+                //如果不是当前section
+                if(!$parent.hasClass(this.config.currentClass)){
+                    this.adjustNav(this,$parent)
+                }
+
+                if(this.config.scrollChange){
+                    this.config.scrollChange($parent);
+                }
+            }
+
+        },
+
+
+        /**
+         * 前序判断是否移动完毕后 开始跳转操作 调用$.animate()
+         */
+        scrollTo:function(target,callback){
+            var offset = $(target).offset().top - this.config.navHeight
+            $('html,body').animate({
+                scrollTop:offset,
+            },this.config.scrollSpeed,this.config.easing,callback)
+        },
+
+        //取消绑定事件及定时器
+        unbindInterval:function(){
+            //清除定时器
+            clearInterval(this.t)
+            //删除绑定事件
+            this.$win.unbind('scroll.onePageNav')
+        }
     };
 
+    //默认属性 = 原型链上的default 可做拓展 以后就这么写代码 可拓展性强
     OnePageNav.defaults = OnePageNav.prototype.defaults
 
+    //把当前OnePageNav拓展 添加到$ 插件已完成最后的添加操作
     $.fn.OnePageNav = function(options){
         console.log(this);
         return this.each(function(){
