@@ -23,13 +23,15 @@
         let lastX = 0;
         let lastY = 0;
         let hue = 0;
+        let huabi_d = 0;
+        let huabi_l = 0;
         let direction = true;
 
         //画画事件
         function draw(e) {
             if (!isDrawing) return; // stop the fn from running when they are not moused down
             console.log(e);
-            ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+            ctx.strokeStyle = `hsl(${hue}, ${huabi_d}%, ${huabi_l}%)`;
             ctx.beginPath();
             // start from
             ctx.moveTo(lastX, lastY);
@@ -39,8 +41,16 @@
             [lastX, lastY] = [e.offsetX, e.offsetY];
 
             hue++;
+            huabi_d++;
+            huabi_l++;
             if (hue >= 360) {
                 hue = 0;
+            }
+            if (huabi_d >= 100) {
+                huabi_d = 0;
+            }
+            if (huabi_l >= 50) {
+                huabi_l = 0;
             }
             if (ctx.lineWidth >= 100 || ctx.lineWidth <= 1) {
                 direction = !direction;
